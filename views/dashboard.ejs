@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+background:#f5f6fa;
+}
+
+.dashboard{
+padding:30px;
+}
+
+.header-card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+margin-bottom:20px;
+}
+
+.table-card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+#suggestBox{
+background:white;
+border:1px solid #ddd;
+}
+
+#suggestBox div{
+padding:8px;
+}
+
+#suggestBox div:hover{
+background:#f1f1f1;
+}
+</style>
+
+</head>
+<body>
+
+<div class="container dashboard">
+
+<!-- Search -->
+<input type="text" id="searchBox" placeholder="Search student..." class="form-control">
+
+<div id="suggestBox"></div>
+
+<form action="/users/search" method="GET">
+<input type="hidden" name="name" id="hiddenInput">
+<button class="btn btn-primary mt-2">Search</button>
+</form>
+
+<!-- Header -->
+<div class="header-card d-flex justify-content-between align-items-center">
+
+<div>
+<h2 class="mb-0">Student Management Dashboard</h2>
+<small class="text-muted">Manage all students</small>
+</div>
+
+<a href="/users/register" class="btn btn-primary">
++ Add Student
+</a>
+
+</div>
+
+<!-- Table -->
+<div class="table-card">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h4>Students List</h4>
+
+<span class="badge bg-primary">
+Total: <%= dashboard.length %>
+</span>
+
+</div>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Email</th>
+<th>Age</th>
+<th>Course</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% if(dashboard.length === 0){ %>
+
+<tr>
+<td colspan="5" class="text-center">
+No Student Found
+</td>
+</tr>
+
+<% } %>
+
+<% dashboard.forEach(student => { %>
+
+<tr>
+<td><%= student.name %></td>
+<td><%= student.email %></td>
+<td><%= student.age %></td>
+<td><%= student.course %></td>
+
+<td>
+
+<a href="/users/update/<%= student._id %>"
+class="btn btn-warning btn-sm">
+Update
+</a>
+
+<a href="/users/delete/<%= student._id %>"
+class="btn btn-danger btn-sm">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+const searchBox = document.getElementById("searchBox");
+const suggestBox = document.getElementById("suggestBox");
+const hiddenInput = document.getElementById("hiddenInput");
+
+searchBox.addEventListener("input", async () => {
+
+const value = searchBox.value;
+
+if(value.length === 0){
+suggestBox.innerHTML = "";
+return;
+}
+
+const res = await fetch(`/users/search?name=${value}`);
+const data = await res.json();
+
+suggestBox.innerHTML = "";
+
+data.forEach(student => {
+
+const div = document.createElement("div");
+div.innerHTML = student.name;
+
+div.onclick = () => {
+searchBox.value = student.name;
+hiddenInput.value = student.name;
+suggestBox.innerHTML = "";
+};
+
+suggestBox.appendChild(div);
+
+});
+
+hiddenInput.value = value;
+
+});
+
+document.querySelector("form").addEventListener("submit", () => {
+hiddenInput.value = searchBox.value;
+});
+
+</script>
+
+</body>
+</html>
